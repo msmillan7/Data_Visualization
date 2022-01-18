@@ -1,0 +1,98 @@
+---
+title: "Gun_Control_Survey"
+author: "Marina Sanchez"
+date: "1/16/2022"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+```
+
+
+```{r}
+#Q: Do you think Congress should or should not pass legislation to: Require background checks for gun purchases at gun shows or other private sales
+mypath <- "D:/Datos/Documents/Development/R/Data Visualization/Homework/Gun Control Tweet/Gun_Control_Poll_Results.csv"
+survey_results <- read.csv(file = mypath)
+dim(survey_results)
+survey_results
+
+p1 <- ggplot(survey_results, aes(x=Response, y=Percentage, fill=Response)) +
+      geom_bar(stat='identity') +
+      guides(fill=FALSE) +
+      labs(x="",
+      y="Percent (%)",
+      title="Do you think Congress should pass legislation to require background checks for gun purchases?",
+      subtitle="Data from NPR/PBS NewsHour/Marist Poll, September 2019 (1,317 adults)") +
+      scale_y_continuous(expand=c(0,0)) +
+      coord_flip(ylim=c(0,65)) +
+      theme_classic() +
+      theme(
+      plot.title=element_text(size = 10),
+      plot.subtitle=element_text(size=8))
+  
+p1
+
+p1 + 
+  geom_label(
+  aes(label=paste0(format(Percentage, digits=1),"%"), y=Percentage+2),
+  color="black",
+  fill="white",
+  size=3
+  )
+
+```
+```{r}
+mypath <- "D:/Datos/Documents/Development/R/Data Visualization/Homework/Gun Control Tweet/Gun_Control_Poll_Results_tot.csv"
+survey_results <- read.csv(mypath)
+dim(survey_results)
+survey_results
+
+survey_results$Response = factor(survey_results$Response, levels=c("Yes", "No", "Unsure")) #Reorder
+survey_results
+
+library(viridis)
+
+ggplot(data=survey_results, aes(x=Response, y=Percentage, fill=Response)) +
+geom_bar(position="dodge", stat="identity", width=0.7) +
+  scale_fill_viridis(discrete = T, option = "E") +
+  scale_fill_manual(values=c("#F3B54A", "#6E7889", "#D8D9DE")) +
+  theme( #Hide redundant y and x axis info, cause its already shown in the histogram 
+    axis.ticks.y=element_blank(),
+    #axis.title.y=element_blank(),
+    axis.line.x=element_blank(),
+    axis.text.x=element_blank(),
+    axis.ticks.x=element_blank(),
+    axis.title.x=element_blank(),
+    ) +
+  labs(
+  x="",
+  y="Percent (%)",
+  title="Do You Support Gun Purchases Background Checks?",
+  subtitle="Data from NPR/PBS NewsHour/Marist Poll, September 2019 (1,317 adults)") +
+  guides(fill=FALSE) +
+  #coord_flip(ylim=c(0,90)) +
+  facet_grid(~Gun_Owner) +
+  theme_minimal() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+  panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  geom_label(
+  aes(label=paste0(format(Percentage, digits=1),"%"), y=Percentage+5),
+  color="black",
+  fill="white",
+  size=3
+  )
+```
+
+
+```{r}
+install.packages("plotrix")
+library(plotrix)
+slices <- c(10, 12, 4, 16, 8)
+lbls <- c("US", "UK", "Australia")
+pie3D(survey_results,labels=lbls,explode=0.1,
+   main="Pie Chart of Countries ")
+```
+

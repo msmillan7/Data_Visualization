@@ -1,0 +1,102 @@
+---
+title: "Titanic"
+author: "Marina Sanchez"
+date: "1/10/2022"
+output: html_document
+---
+
+1. Proportion of males and females that survived
+
+```{r}
+mydata <- as.data.frame(Titanic)
+mydata
+
+library(dplyr) #load library
+library(ggplot2) #load library
+
+#Total Number of males and females according to Survival
+mydata_1 = mydata %>% group_by(Sex, Survived) %>% summarize(counts=sum(Freq))
+mydata_1
+
+mydata_1 %>% group_by(Sex)
+mydata_1 %>% group_by(Sex) %>% 
+  mutate(nsex=sum(counts)) #We need this new column to get the total of F and M
+
+#Get proportion of M and F who survived and not survived
+mydata_2 = mydata_1 %>% group_by(Sex) %>% 
+  mutate(nsex=sum(counts)) %>% 
+  mutate(prop=counts/nsex)
+mydata_2
+
+#Other way
+#mydata_1 %>% group_by(Sex) %>% mutate(nsex=sum(counts), prop=counts/nsex)
+
+
+#Plot Data
+
+#Create variable to be ploted
+plotdata <- mydata_2 %>%
+  filter(Survived=='Yes')
+plotdata
+
+ggplot(data=plotdata, aes(x=Sex, y=prop, fill=Sex)) +
+geom_bar(stat="identity", width=0.7)
+```
+
+2. Find the overall proportion of males and females who survived the sinking of the Titanic, by class booked.
+```{r}
+mydata_class = mydata %>% group_by(Sex, Survived, Class) %>% summarize(counts=sum(Freq))
+mydata_class
+
+mydata_class %>% group_by(Sex)
+mydata_class_1 = mydata_class %>% group_by(Sex) %>% 
+  mutate(nsex=sum(counts)) #We need this new column to get the total of F and M for each Class
+mydata_class_1
+
+#Get proportion of M and F whio survived and not survived of each class
+mydata_class_2 = mydata_class_1 %>% group_by(Sex) %>% 
+  mutate(nsex=sum(counts)) %>% 
+  mutate(prop=counts/nsex)
+mydata_2
+
+#Plot Data
+
+#Create variable to be ploted
+plotdata <- mydata_class_2 %>%
+  filter(Survived=='Yes')
+plotdata
+
+ggplot(data=plotdata, aes(x=Sex, y=prop, fill=Sex)) +
+geom_bar(stat="identity", width=0.7) +
+facet_wrap(vars(Class))
+
+```
+3. Find the proportion of passengers who survived, by sex, class and whether child or adult.
+```{r}
+mydata_class_age = mydata %>% group_by(Sex, Survived, Class, Age) %>% summarize(counts=sum(Freq))
+mydata_class_age
+
+mydata_class_age %>% group_by(Sex)
+mydata_class_age_1 = mydata_class_age %>% group_by(Sex) %>% 
+  mutate(nsex=sum(counts)) #We need this new column to get the total of F and M for each Class
+mydata_class_age_1
+
+#Get proportion of M and F who survived and not survived of each class and age
+mydata_class_age_2 = mydata_class_age_1 %>% group_by(Sex) %>% 
+  mutate(nsex=sum(counts)) %>% 
+  mutate(prop=counts/nsex)
+mydata_class_age_2
+
+#Plot Data
+
+#Create variable to be ploted
+plotdata <- mydata_class_age_2 %>%
+  filter(Survived=='Yes')
+plotdata
+
+#To-Do: See correct solution
+ggplot(data=plotdata, aes(x=Sex, y=prop, fill=Sex)) +
+geom_bar(stat="identity", width=0.7) +
+  facet_grid(vars(Class, Age))
+```
+

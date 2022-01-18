@@ -1,0 +1,78 @@
+---
+title: "Plotly_Sharks"
+author: "Marina Sanchez"
+date: "1/14/2022"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(plotly)
+
+mypath <- "D:/Datos/Documents/Development/R/Data Visualization/Datasets/SharksClean.csv"
+sharks_df <- read_csv(mypath)
+dim(sharks_df)
+summary(sharks_df)
+
+#Response variable_ Body Size
+#Explanatory Variable: Tooth Size
+
+sharks_tooth_df <- sharks_df %>% select(BodySize, ToothSize, Genus, Species) %>% drop_na()
+str(sharks_tooth_df)
+
+#Interactive Scatterplot with Plotly
+plot_ly(data=sharks_tooth_df, 
+        x = ~ToothSize, 
+        y = ~BodySize,
+        type='scatter', 
+        mode='markers', 
+        color = ~Genus) %>%
+  layout(
+    title = list(text="Florida Sharks"),
+    xaxis = list(title="Tooth Size", zeroline = FALSE),
+    yaxis = list(title="Body Size", zeroline = FALSE)
+  ) %>%
+  add_annotations(      #Add title to legend
+    text = "Genus",
+    x = 1,
+    y = 1,
+    xref = "paper",
+    yref = "paper",
+    xanchor = "left",
+    yanchor = "bottom",
+    showarrow = FALSE,
+    font = list(size = 15))
+
+```
+```{r}
+#Update hovering so that it shows Genus and Specie
+plot_ly(data=sharks_tooth_df, 
+        x = ~ToothSize, 
+        y = ~BodySize,
+        type='scatter', 
+        mode='markers', 
+        color = ~Genus,
+        text=paste0("Genus: ", sharks_tooth_df$Genus, "<br>",
+                    "Species: ", sharks_tooth_df$Species, "<br>"),
+        hoverinfo = 'text') %>%
+  layout(
+    title = list(text="Florida Sharks"),
+    xaxis = list(title="Tooth Size", zeroline = FALSE),
+    yaxis = list(title="Body Size", zeroline = FALSE)
+  ) %>%
+  add_annotations(      #Add title to legend
+    text = "Genus",
+    x = 1,
+    y = 1,
+    xref = "paper",
+    yref = "paper",
+    xanchor = "left",
+    yanchor = "bottom",
+    showarrow = FALSE,
+    font = list(size = 15))
+
+```
+
+

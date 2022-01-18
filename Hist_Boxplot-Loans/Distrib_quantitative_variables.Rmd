@@ -1,0 +1,137 @@
+---
+title: "Quantitative_Variables"
+author: "Marina Sanchez"
+date: "1/12/2022"
+output: html_document
+---
+
+```{r}
+library(dplyr) #load library
+library(ggplot2) #load library
+library(tidyverse)
+library(haven)
+
+mypath <- "D:/Datos/Documents/Development/R/Data Visualization/Datasets/GSS2016.csv"
+GSS2016 <- read_csv(mypath)
+dim(GSS2016)
+
+GSS2016.TVhours <- GSS2016 %>% select(tvhours)
+summary(GSS2016.TVhours)
+```
+
+Exercise 1: Choose a quantitative variable and visualize it. Explain:
+Shape
+Center
+Spread
+Potential outliers
+```{r}
+mypath <- "D:/Datos/Documents/Development/R/Data Visualization/Datasets/LendingClubLoanData.csv"
+loans_df <- read_csv(mypath)
+head(loans_df)
+dim(loans_df)
+
+#Subset 500000 random samples from the original dataset
+loans_dfSamp <- sample_n(loans_df, 500000) 
+head(loans_dfSamp)
+dim(loans_dfSamp)
+
+#Select quantitative variable of interest
+loans_df.loan_amnt <- loans_df %>% select(loan_amnt)
+summary(loans_df.loan_amnt)
+
+### Histograms ###
+
+ggplot(data=loans_df.loan_amnt, aes(x=loan_amnt)) + geom_histogram()
+
+#Drop Nas and select a slightly larger binwidth (I tried different values and 2000 looks good)
+loans_df.loan_amnt <- loans_df.loan_amnt %>% drop_na()
+ggplot(data = loans_df.loan_amnt, aes(x=loan_amnt)) + geom_histogram(binwidth=2000)
+
+#The closed="left" option bins the data into intervals of the form [0,1), [1,2), [2,3), etc.
+#ggplot(data = loans_df.loan_amnt, aes(x=loan_amnt)) + geom_histogram(boundary=0, binwidth = 2000, closed="left")
+
+ggplot(data = loans_df.loan_amnt, aes(x=loan_amnt)) + 
+  geom_histogram(color="black", fill="lightgreen", binwidth=2000) +
+  scale_x_continuous(n.breaks = 10) + #Increase numbers shown in x axis
+  scale_y_continuous(n.breaks = 10) + #Increase numbers shown in y axis
+  labs(title="Loan Amount?",x="Lent Money($)", y="Frequency") +
+  theme_classic()
+```
+
+We can see that some specific values are repeated
+
+```{r}
+#Show percentages instead of count
+ggplot(data = loans_df.loan_amnt, aes(x=loan_amnt, y=100*(..count../sum(..count..)))) + 
+  geom_histogram(color="black", fill="lightgreen", boundary=0, binwidth=2000) +
+  scale_x_continuous(n.breaks = 10) + #Increase numbers shown in x axis
+  scale_y_continuous(n.breaks = 8) + #Increase numbers shown in y axis
+  labs(title="Loan Amount?",x="Lent Money($)", y="Percent (%)") +
+  theme_classic()
+```
+
+```{r}
+### Density + Histogram Plots ###
+
+ggplot(data = loans_df.loan_amnt, aes(x=loan_amnt)) + 
+  geom_histogram(aes(y=..count..), color="black", fill="lightgreen", boundary=0, binwidth=2000) +
+  geom_density(aes(y=2000*(..count..)), adjust=1.2, color="red", size=0.8) +
+  scale_x_continuous(n.breaks = 10) + #Increase numbers shown in x axis
+  scale_y_continuous(n.breaks = 8) + #Increase numbers shown in y axis
+  labs(title="Loan Amount?",x="Lent Money($)", y="Frequency") +
+  theme_classic()
+
+```
+
+```{r}
+### Boxplot ###
+
+ggplot(data = loans_df.loan_amnt, aes(x=loan_amnt)) +
+geom_boxplot(fill="lightgreen", outlier.shape=21, outlier.fill="lightgreen", outlier.alpha=0.3) +
+theme_classic() 
+
+
+box <- ggplot(data = loans_df.loan_amnt, aes(x=loan_amnt)) +
+geom_boxplot(fill="lightgreen", outlier.shape=21, outlier.fill="lightgreen", outlier.alpha=0.3) +
+theme_classic() +
+theme( #Hide meaningless y x
+axis.line.y=element_blank(),
+axis.text.y=element_blank(),
+axis.ticks.y=element_blank(),
+axis.title.y=element_blank()
+)
+
+box
+```
+
+```{r}
+### Boxplot + Histogram ###
+
+hist <- ggplot(data = loans_df.loan_amnt, aes(x=loan_amnt, y=100*(..count../sum(..count..)))) + 
+  geom_histogram(color="black", fill="lightgreen", boundary=0, binwidth=2000) +
+  scale_x_continuous(n.breaks = 10) + #Increase numbers shown in x axis
+  scale_y_continuous(n.breaks = 8) + #Increase numbers shown in y axis
+  labs(title="Loan Amount?",x="Lent Money($)", y="Percent (%)") +
+  theme_classic()
+
+hist
+
+
+box <- ggplot(data = loans_df.loan_amnt, aes(x=loan_amnt)) +
+geom_boxplot(fill="lightgreen", outlier.shape=21, outlier.fill="lightgreen", outlier.alpha=0.3) +
+theme_classic() +
+theme( #Hide redundant y and x axis info, cause its already shown in the histogram 
+axis.line.y=element_blank(),
+axis.text.y=element_blank(),
+axis.ticks.y=element_blank(),
+axis.title.y=element_blank(),
+axis.line.x=element_blank(),
+axis.text.x=element_blank(),
+axis.ticks.x=element_blank(),
+axis.title.x=element_blank(),
+)
+box
+
+library(cowplot)
+plot_grid(hist, box, ncol = 1, rel_heights = c(0.85, 0.15), align = 'v', axis = 'lr')
+```

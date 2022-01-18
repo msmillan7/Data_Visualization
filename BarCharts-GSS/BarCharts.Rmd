@@ -1,0 +1,119 @@
+---
+title: "BarCharts"
+author: "Marina Sanchez"
+date: "1/13/2022"
+output: html_document
+---
+```{r}
+library(dplyr) #load library
+library(ggplot2) #load library
+library(tidyverse)
+library(haven)
+
+mypath <- "D:/Datos/Documents/Development/R/Data Visualization/Datasets/GSS2016.csv"
+GSS2016 <- read_csv(mypath)
+dim(GSS2016)
+summary(GSS2016)
+```
+
+
+```{r}
+### Simple Bar Graph (Perception of premarital sex) ###
+
+GSS2016.filt <- GSS2016 %>% 
+  select(premarsx) %>%
+  mutate(premarsx=as.character(premarsx)) %>% #Convert cols to character
+  drop_na()  %>%
+  transmute(premarsx=fct_recode(premarsx, "Always Wrong"="1", "Almost Always Wrong"="2", "Sometimes Wrong"="3", "Never Wrong"="4")) #Rename values and factorize
+
+str(GSS2016.filt)
+
+#We first get the counts (and total) for each perception
+GSS2016.filt1 <- GSS2016.filt %>% count(premarsx)
+GSS2016.filt1
+
+#Adding percentages of each value in a column:
+GSS2016.filt1 <- GSS2016.filt1 %>% mutate(Percent=100*(n/sum(n)))
+GSS2016.filt1
+
+p1 <- ggplot(GSS2016.filt1, aes(x=premarsx, y=Percent, fill=premarsx)) +
+      geom_bar(stat='identity') +
+      guides(fill=FALSE) +
+      labs(x="",
+      y="Percent (%)",
+      title="Perception of Sex Before Marriage",
+      subtitle="Data from 2016 GSS") +
+      scale_y_continuous(expand=c(0,0)) +
+      coord_flip(ylim=c(0,65)) +
+      theme_classic() +
+      theme(
+      plot.title=element_text(size = 10),
+      plot.subtitle=element_text(size=8))
+  
+p1
+
+p1 + 
+  geom_label(
+  aes(label=paste0(format(Percent, digits=1),"%"), y=Percent-3),
+  color="black",
+  fill="white",
+  size=3.2
+  )
+
+```
+
+
+```{r}
+### Relation between two categorical variables (Gender and Perception of premarital sex) ###
+
+GSS2016.premarsx <- GSS2016 %>% select(sex, premarsx) %>%
+mutate(sex=as.character(sex), premarsx=as.character(premarsx)) %>% #Convert cols to character
+drop_na()  %>%
+transmute(sex=fct_recode(sex, male="1", female="2"), premarsx=fct_recode(premarsx, "Always Wrong"="1", "Almost Always Wrong"="2", "Sometimes Wrong"="3", "Never Wrong"="4")) #Rename values and factorize
+
+str(GSS2016.premarsx)
+
+table1 <- table(GSS2016.premarsx$sex, GSS2016.premarsx$premarsx)
+table1
+
+prop.table(table1,1) #Conditional proportions
+
+#We first group the data by gender, then get the counts (and total) for each gender, from which we can compute the conditional proportions
+GSS2016.premarsx1 <- GSS2016.premarsx %>% group_by(sex) %>% count(premarsx)
+GSS2016.premarsx1
+
+#Adding percentages:
+GSS2016.premarsx1 <- GSS2016.premarsx1 %>% mutate(Percent=100*(n/sum(n)))
+GSS2016.premarsx1
+
+### STACKED BAR CHART ###
+ggplot(data=GSS2016.premarsx1, aes(x=sex, y=Percent, fill=premarsx)) +
+geom_bar(stat="identity", color="black") +
+labs(x="Sex", y="Percent (%)", title="Perception of Sex Before Marriage", subtitle="Data from 2016 GSS") +
+scale_fill_manual(name="Perception:",
+values=c("Always Wrong"="red", "Almost Always Wrong"="lightpink", "Sometimes Wrong"="lightblue", "Never Wrong"="lightgreen")) +
+theme_minimal() +
+scale_y_continuous(expand=expansion(mult=c(0,0.1)))
+
+```
+
+
+
+```{r}
+ggplot(data=GSS2016.premarsx1, aes(x=premarsx, y=Percent, fill=premarsx)) +
+geom_bar(stat="identity") +
+labs(x="Perception", y="Percent (%)", title="Perception of Sex Before Marriage", subtitle="Data from 2016 GSS") +
+scale_fill_manual(name="Perception",
+values=c("Always Wrong"="red", "Almost Always Wrong"="lightpink", "Sometimes Wrong"="lightblue", "Never Wrong"="lightgreen")) +
+scale_y_continuous(expand=expansion(mult=c(0,0.1))) +
+facet_wrap(vars(sex)) +
+theme_bw() + 
+theme(axis.text.x=element_blank()) + #Remove tags from x axis
+geom_label( #Add percentages to bars
+aes(label=paste0(format(Percent, digits=1),"%"), y=Percent-3),
+color="black",
+fill="white",
+size=3
+)
+```
+Conclusion: Perception of Premarital Sex is independent from gender.

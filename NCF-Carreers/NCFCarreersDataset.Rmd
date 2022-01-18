@@ -1,0 +1,109 @@
+---
+title: "NCFCarreersDataset"
+author: "Marina Sanchez"
+date: "1/13/2022"
+output: html_document
+---
+
+##Munge Data
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(haven)
+
+mypath <- "D:/Datos/Documents/Development/R/Data Visualization/Datasets/NCAlumn.csv"
+ncf.alumn <- read_csv(mypath)
+dim(ncf.alumn)
+summary(ncf.alumn)
+
+ncf.alumn_carreers <- ncf.alumn %>% select(DIVISION_1, Industry) %>% drop_na()
+str(ncf.alumn_carreers)
+
+#categories <- c("Arts/Entertainment", "Communication", "Social Services", "Government", "Law", "Sales", "Consulting", "Financial", "Education", "Health", #"Engineering/Architecture", "Technology", "Food", "Environmental", "Other")
+
+#Show all different values within Industry column
+unique(ncf.alumn_carreers$Industry)
+
+#Group into categories
+art_cat <- c("Performing Arts", "Music", "Arts & Entertainment", "Film", "Arts", "Museums and Institutions", "Art", "Photography", "Entertainment", "Imaging")
+comm_cat <- c("Publishing", "Media", "Advertising", "Communications", "Marketing", "Online Media", "Journalism")
+soc_cat <- c("Library", "Services", "Community Services")
+gov_cat <- c("Government", "City/County/State", "Military", "Real Estate", "International Relations", "Defense & Space", "Public Relations")
+law_cat <- c("Attorney", "Environmental Law", "Law")
+sales_cat <- c("Investments", "Retail")
+consult_cat <- c("International Economic Development Consulting", "Non-profit consulting", "Consulting", "Business Consulting")
+financ_cat <- c("Banking", "Investment banking", "Accounting", "Financial Services")
+edu_cat <- c("Education", "Educational Services", "Education / Training", "Higher education")
+health_cat <- c("Public Health", "Healthcare", "Dentistry", "Health Care Consulting", "Psychotherapy", "Healthcare Services", "Sports Management", "Health & Fitness", "Pharmaceutical", "Medicine", "Medical", "Medical Equipment", "Medical Research", "Hospitality")
+eng_cat <- c("Architecture", "Manufacturing", "Construction", "Engineering", "Electronics")
+tech_cat <- c("Software", "Technology", "Data Science", "Software Design", "IT Communications", "Information Technology", "Computer Software")
+food_cat <- c("Farming", "Pet Food", "Food", "Food and Lodging", "Restaurant", "Agriculture", "Food Service", "Food Franchise")
+env_cat <- c("Environmental Services", "Archaeology", "Marine", "Environmental", "Environmental Science")
+other_cat <- c("Insurance", "Textiles", "Home Improvement", "Shipping", "Nonprofit", "Transportation", "Economic Development", "Non Profit", "Religion", "Research", "Human Resources", "Development", "Antiques", "Business", "Philanthropy")
+
+#Recategorize dataframe
+ncf.alumn_ind_vec <- fct_collapse(ncf.alumn_carreers$Industry,
+                                  "Arts/Entertainment" = art_cat,
+                                  "Communication" = comm_cat,
+                                  "Social Services" = soc_cat,
+                                  "Government" = gov_cat,
+                                  "Law" = law_cat,
+                                  "Sales" = sales_cat,
+                                  "Consulting" = consult_cat,
+                                  "Financial" = financ_cat,
+                                  "Education" = edu_cat,
+                                  "Health" = health_cat,
+                                  "Engineering/Architecture" = eng_cat,
+                                  "Technology" = tech_cat,
+                                  "Food" = food_cat,
+                                  "Environmental" = env_cat,
+                                  "Other" = other_cat)
+
+#Add column of categorized industries to original dataset.
+ncf.alumn_carreers_cat <- ncf.alumn_carreers %>% 
+  mutate(Industry, ncf.alumn_ind_vec) %>% 
+  rename("Industry.cat" = ncf.alumn_ind_vec) %>% #Rename new column
+  select(-c(Industry)) #Remove origial column (not needed anymore)
+
+ncf.alumn_carreers_cat
+table(ncf.alumn_carreers_cat)
+```
+
+```{r}
+# Relation between two categorical variables
+# Explanatory variable: DIVISION_1
+# Response variable: Industry
+
+
+table1 <- table(ncf.alumn_carreers_cat$DIVISION_1, ncf.alumn_carreers_cat$Industry.cat)
+table1
+
+prop.table(table1,1) #Conditional proportions
+
+#We first group the data by DIVISION_1, then get the counts (and total) for each DIVISION_1 and get the conditional proportions
+ncf.alumn_carreers1 <- ncf.alumn_carreers_cat %>% group_by(DIVISION_1) %>% count(Industry.cat)
+ncf.alumn_carreers1
+
+#Adding percentages:
+ncf.alumn_carreers2 <- ncf.alumn_carreers1 %>% mutate(Percent=100*(n/sum(n)))
+ncf.alumn_carreers2
+
+### STACKED BAR CHART ###
+ggplot(data=ncf.alumn_carreers2, aes(x=DIVISION_1, y=Percent, fill=Industry.cat)) +
+geom_bar(stat="identity", color="black") +
+labs(x="Industry", y="Percent (%)", title="Proffesional Carreer according to College Major", subtitle="Data from NCF database") +
+theme_minimal() +
+scale_y_continuous(expand=expansion(mult=c(0,0.1)))
+
+#Split by Major
+ggplot(data=ncf.alumn_carreers2, aes(x=Industry.cat, y=Percent, fill=Industry.cat)) +
+geom_bar(stat="identity", color="black") +
+labs(x="Industry", y="Percent (%)", title="Proffesional Carreer according to College Major", subtitle="Data from NCF database") +
+theme_minimal() +
+scale_y_continuous(expand=expansion(mult=c(0,0.1))) + 
+facet_wrap(vars(DIVISION_1)) +
+theme_bw() +
+theme(axis.text.x=element_blank()) #Remove tags from x axis
+```
+
