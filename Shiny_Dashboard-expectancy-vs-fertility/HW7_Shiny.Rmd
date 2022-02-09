@@ -1,0 +1,114 @@
+---
+title: "HW_Shiny"
+author: "Marina Sanchez"
+date: "1/20/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1. catterplot of life expectancy vs. fertility, for the year 2018, where each dot represents a country
+```{r}
+#install.packages("shiny")
+library(shiny)
+library(ggrepel)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+
+mypath <- "D:/Datos/Documents/Development/R/Data Visualization/Datasets/WorldBankData.csv"
+bank_df <- read_csv(mypath)
+head(bank_df)
+
+bank_df.2018 <- bank_df %>% 
+  select(Year, LifeExpectancy, Fertility, Population, Country, Region) %>% 
+  drop_na()
+
+head(bank_df.2018)
+
+
+ggplot(bank_df.2018 %>% filter(Year == 2017), aes(x=LifeExpectancy, y=Fertility, size=Population, color=Region, fill=Region)) +
+  geom_point(shape=21, alpha=0.5) + 
+  theme_minimal() +
+  scale_x_continuous(labels = function(x) paste0(x, "%")) +
+  labs(title="Life expectancy vs. Fertility",
+  subtitle = "Year 2017",
+  x = "Life Expectancy",
+  y = "Fertility") +
+  geom_text_repel(aes(label=Country), size=2.5)
+
+# plot_ly(data=bank_df.2018, 
+#         x = ~LifeExpectancy, 
+#         y = ~Fertility,
+#         type='scatter', 
+#         mode='markers', 
+#         color = ~Population,
+#         text=paste0("Population: ", bank_df.2018$Population, "<br>"),
+#         hoverinfo = 'text') %>%
+#   layout(
+#     title = list(text="Life expectancy vs. Fertility, Year 2017"),
+#     xaxis = list(title="Life Expectancy", zeroline = FALSE),
+#     yaxis = list(title="Fertility", zeroline = FALSE)
+#   ) %>%
+#   add_annotations(      #Add title to legend
+#     text = "Population",
+#     x = 1,
+#     y = 1,
+#     xref = "paper",
+#     yref = "paper",
+#     xanchor = "left",
+#     yanchor = "bottom",
+#     showarrow = FALSE,
+#     font = list(size = 15))
+```
+
+
+2. Create a shiny app that shows this plot, but where you include a selectInput that lets the user select the year
+```{r}
+
+library(shiny)
+
+ui <- fluidPage(
+  
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput(
+        inputId = "myYear",
+        label = "Please Select a Year",
+        min = 1960,
+        max = 2018,
+        value = 2010
+      )
+    ),
+    mainPanel(plotOutput("plot"))
+  )
+  
+)
+
+server <- function(input, output) {
+  
+  output$plot<-renderPlot({
+    ggplot(bank_df.2018 %>% filter(Year == input$myYear), aes(x=LifeExpectancy, y=Fertility, size=Population, color=Region, fill=Region)) +
+    geom_point(shape=21, alpha=0.5) + 
+    theme_minimal() +
+    scale_x_continuous(labels = function(x) paste0(x, "%")) +
+    labs(title="Life expectancy vs. Fertility",
+    subtitle = input$myYear,
+    x = "Life Expectancy",
+    y = "Fertility") +
+    geom_text_repel(aes(label=Country), size=2.5)
+  })
+  }
+  
+shinyApp(ui = ui, server = server)
+
+
+
+
+```
+
+
+
+
