@@ -1,6 +1,8 @@
 library(shiny)
 library(plotly)
 library(ggplot2)
+library(readr)
+library(tidyverse)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
@@ -8,7 +10,7 @@ shinyServer(function(input, output, session) {
     df <- reactiveFileReader(
         intervalMillis = 20000,
         session = session,
-        filePath = '../WorldBankData.csv',
+        filePath = './WorldBankData.csv',
         readFunc = read_csv) 
     
     #Years to be displayed in UI slider input
@@ -31,11 +33,14 @@ shinyServer(function(input, output, session) {
     
     #Plot to be displayed in UI
     output$myplot <- renderPlotly({
-        year_input <- input$year
+
         df <- df()
         
-        #Filter df according to user's input (year, country and region)
-        df_filt <- df %>% filter(Year == year_input) %>% drop_na()
+        #To-Do Filter df according to user's input (year, region and country, when applies)
+        df_filt <- df %>% 
+            drop_na() %>% 
+            filter(Year == input$year, 
+                   Region == input$region)
         
         # p <- ggplot(df_filt, aes(x=LifeExpectancy, 
         #                 y=Fertility, 
@@ -45,7 +50,7 @@ shinyServer(function(input, output, session) {
         #     geom_point(shape=21, alpha=0.5) + 
         #     theme_minimal() +
         #     labs(title="Life expectancy vs. Fertility",
-        #          subtitle = year_input,
+        #          subtitle = input$year,
         #          x = "Life Expectancy (years)",
         #          y = "Fertility (number of children)") +
         #     geom_text_repel(aes(label=Country), size=2.5)
@@ -58,7 +63,7 @@ shinyServer(function(input, output, session) {
                                    '<br>Life Expectancy:', LifeExpectancy,
                                    '<br>Fertility:', Fertility, 
                                    '<br>Population:', Population)) %>%
-            layout(title = paste('Fertility vs. Life Expectancy in', year_input),
+            layout(title = paste('Fertility vs. Life Expectancy in', input$year),
                    plot_bgcolor='#ecf0f5',
                    paper_bgcolor='#ecf0f5',
                    xaxis = list(title = 'Life Expectancy (years)'),
