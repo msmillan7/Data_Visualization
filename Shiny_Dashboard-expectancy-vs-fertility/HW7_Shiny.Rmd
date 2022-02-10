@@ -18,7 +18,7 @@ library(dplyr)
 library(ggplot2)
 library(tidyverse)
 
-mypath <- "D:/Datos/Documents/Development/R/Data Visualization/Datasets/WorldBankData.csv"
+mypath <- "WorldBankData.csv"
 bank_df <- read_csv(mypath)
 head(bank_df)
 
@@ -68,8 +68,6 @@ ggplot(bank_df.2018 %>% filter(Year == 2017), aes(x=LifeExpectancy, y=Fertility,
 2. Create a shiny app that shows this plot, but where you include a selectInput that lets the user select the year
 ```{r}
 
-library(shiny)
-
 ui <- fluidPage(
   
   sidebarLayout(
@@ -93,7 +91,7 @@ server <- function(input, output) {
     ggplot(bank_df.2018 %>% filter(Year == input$myYear), aes(x=LifeExpectancy, y=Fertility, size=Population, color=Region, fill=Region)) +
     geom_point(shape=21, alpha=0.5) + 
     theme_minimal() +
-    scale_x_continuous(labels = function(x) paste0(x, "%")) +
+    #scale_x_continuous(labels = function(x) paste0(x, "")) +
     labs(title="Life expectancy vs. Fertility",
     subtitle = input$myYear,
     x = "Life Expectancy",
@@ -103,8 +101,6 @@ server <- function(input, output) {
   }
   
 shinyApp(ui = ui, server = server)
-
-
 
 
 ```
