@@ -1,0 +1,13 @@
+name: ShinyDashboard
+title: ShinyDashboard
+username:
+account: msmill
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5621744
+bundleId: 5565797
+url: https://msmill.shinyapps.io/ShinyDashboard/
+when: 1644516966.1639
+lastSyncTime: 1644516966.1639
+asMultiple: FALSE
+asStatic: FALSE

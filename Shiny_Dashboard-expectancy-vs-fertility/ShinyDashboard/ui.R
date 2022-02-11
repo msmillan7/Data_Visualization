@@ -1,12 +1,15 @@
 library(plotly)
 library(shinydashboard)
 library(shiny)
+library(shinythemes)
 
 
 
 dashboardPage(
     
-    dashboardHeader(title = "Life expectancy vs. Fertility Around The World"),
+    skin = "blue",
+    dashboardHeader(title = "Life expectancy vs. Fertility Around The World",
+                    titleWidth = 470),
     
     dashboardSidebar(
         uiOutput("years"),
