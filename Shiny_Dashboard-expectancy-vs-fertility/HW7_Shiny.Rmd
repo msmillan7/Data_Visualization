@@ -105,6 +105,13 @@ shinyApp(ui = ui, server = server)
 
 ```
 
+```{r}
+bank_df.tst <- bank_df %>% 
+  select(Country=="Andorra") %>% 
+  drop_na()
+```
+
+
 
 
 
